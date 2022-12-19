@@ -6,7 +6,9 @@ from pghistory.models import Context
 
 
 def install_pgh_attach_context_func(apps, schema_editor):
-    Context.install_pgh_attach_context_func(using=schema_editor.connection.alias)
+    # skip creating stored function for non-postgres database
+    if schema_editor.connection.vendor.startswith("postgres"):
+        Context.install_pgh_attach_context_func(using=schema_editor.connection.alias)
 
 
 class Migration(migrations.Migration):
@@ -15,8 +17,4 @@ class Migration(migrations.Migration):
         ("pghistory", "0003_auto_20201023_1636"),
     ]
 
-    operations = [
-        migrations.RunPython(
-            install_pgh_attach_context_func, reverse_code=migrations.RunPython.noop
-        )
-    ]
+    operations = [migrations.RunPython(install_pgh_attach_context_func, reverse_code=migrations.RunPython.noop)]
